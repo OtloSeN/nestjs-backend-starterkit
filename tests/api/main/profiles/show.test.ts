@@ -1,0 +1,3 @@
+describe('Main: show profile', () => {
+
+});

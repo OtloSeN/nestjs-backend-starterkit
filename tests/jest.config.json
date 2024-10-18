@@ -1,0 +1,43 @@
+{
+    "testTimeout": 15000,
+    "verbose": true,
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "rootDir": "../",
+    "roots": [ "tests" ],
+    "testRegex": ".test.ts$",
+    "transform": {
+        "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "globalSetup": "<rootDir>/tests/globalSetup.ts",
+    "globalTeardown": "<rootDir>/tests/globalTeardown.ts",
+    "setupFilesAfterEnv": [
+        "<rootDir>/tests/setupAfterEnv.ts"
+    ],
+    "moduleNameMapper": {
+        "^src/(.*)$": "<rootDir>/src/$1",
+        "^lib/(.*)$": "<rootDir>/lib/$1",
+        "^tests/(.*)$": "<rootDir>/tests/$1",
+        "^configs/(.*)$": "<rootDir>/configs/$1",
+        "^@common/(.*)$": "<rootDir>/src/common/$1",
+        "^@domainModels/(.*)$": "<rootDir>/src/domain/models/$1"
+    },
+    "collectCoverageFrom": [
+        "src/**/*.ts"
+    ],
+    "coveragePathIgnorePatterns": [
+        "node_modules",
+        ".module.ts",
+        "src/AppProvider.ts",
+        "src/domain/migrations/*"
+    ],
+    "coverageThreshold": {
+        "global": {
+            "branches": 85,
+            "functions": 85,
+            "lines": 85,
+            "statements": 85
+        }
+    }
+}
+  

@@ -1,0 +1,3 @@
+describe('Main: session deleting', () => {
+
+});

@@ -1,0 +1,74 @@
+image: atlassian/default-image:4
+
+definitions:
+  steps:
+    - step: &PreparationStep
+        name: Pipeline preparations
+        script:
+          - mkdir -p certs
+          - echo "Apple cert for tests" > ./certs/AppleAuthKey.p8
+          - npm i
+        artifacts:
+          - certs/*
+          - node_modules/**
+    - parallel: &TestSteps
+        steps:
+          - step:
+              name: 'Run lint'
+              script:
+                - npm run lint
+          - step:
+              name: 'Run tests'
+              script:
+                - apt-get update
+                - apt-get install netcat -y
+                - cp .env.pipelines .env
+                - docker run -d --rm -p 3306:3306 -e MYSQL_DATABASE=starterkit_test -e MYSQL_RANDOM_ROOT_PASSWORD=yes -e MYSQL_USER=starterkit_user -e MYSQL_PASSWORD=password mysql:8 mysqld --sql_mode="NO_ENGINE_SUBSTITUTION"
+                - ./bin/wait-for.sh localhost 3306
+                - npm run test
+              services: 
+                - docker 
+
+pipelines:
+  branches:
+    dev:
+      - step: 
+          <<: *PreparationStep
+      - parallel: 
+          <<: *TestSteps
+      - step:
+          name: Build and push Docker image
+          script:
+            - docker build -t starterkit-backend .
+            - pipe: atlassian/aws-ecr-push-image:2.4.0
+              variables:
+                IMAGE_NAME: starterkit-backend
+      - step:
+          name: Deploy to ECS
+          script:
+            - pipe: atlassian/aws-ecs-deploy:1.12.1
+              variables:
+                CLUSTER_NAME: 'starterkit-dev'
+                SERVICE_NAME: 'backend'
+                FORCE_NEW_DEPLOYMENT: 'true'
+    main:
+      - step: 
+          <<: *PreparationStep
+      - parallel: 
+          <<: *TestSteps
+      - step:
+          name: Build and push Docker image
+          script:
+            - docker build -t starterkit-backend:prod .
+            - pipe: atlassian/aws-ecr-push-image:2.4.0
+              variables:
+                IMAGE_NAME: starterkit-backend
+                TAGS: latest-demo
+      - step:
+          name: Deploy to ECS
+          script:
+            - pipe: atlassian/aws-ecs-deploy:1.12.1
+              variables:
+                CLUSTER_NAME: 'starterkit-prod'
+                SERVICE_NAME: 'backend'
+                FORCE_NEW_DEPLOYMENT: 'true'
