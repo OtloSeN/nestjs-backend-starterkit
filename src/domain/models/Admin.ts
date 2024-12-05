@@ -1,17 +1,30 @@
-import crypto                                                                         from 'crypto';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { KEY_LENGTH, SALT_LENGTH }                                                    from '@common/constants';
-import { BadRequestException }                                                        from '@common/exceptions';
-import { IAdminRegisterParams, IAdminAuthenticateParams }                             from './interfaces/IAdmin';
-import BaseEntity                                                                     from './BaseEntity';
+import crypto                                                                                    from 'crypto';
+import { promisify }                                                                             from 'util';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { KEY_LENGTH, SALT_LENGTH }                                                               from '@common/constants';
+import { BadRequestException }                                                                   from '@common/exceptions';
+import { IAdminRegisterParams, IAdminAuthenticateParams }                                        from './interfaces/IAdmin';
+import BaseEntity                                                                                from './BaseEntity';
+import Role                                                                                      from './Role';
+
+const scryptAsync = promisify(crypto.scrypt);
 
 @Entity({ name: 'Admins' })
 export default class Admin extends BaseEntity {
     @PrimaryGeneratedColumn({ type: 'int' })
     id : number;
 
+    @Column({ type: 'int', nullable: false })
+    roleId : number;
+
     @Column({ type: 'varchar', nullable: false, unique: true })
     email : string;
+
+    @Column({ type: 'varchar', nullable: false })
+    firstName : string;
+
+    @Column({ type: 'varchar', nullable: false })
+    lastName : string;
 
     @Column({ type: 'varchar', nullable: false })
     passwordHash : string;
@@ -25,6 +38,9 @@ export default class Admin extends BaseEntity {
     @UpdateDateColumn({ type: 'datetime', nullable: false })
     updatedAt : Date;
 
+    @ManyToOne(() => Role, role => role.admins)
+    role : Role;
+
     private static readonly SALT_LENGTH = SALT_LENGTH;
 
     private static readonly KEY_LENGTH = KEY_LENGTH;
@@ -32,7 +48,7 @@ export default class Admin extends BaseEntity {
     static async register(data: IAdminRegisterParams) {
         const salt = this.generateSalt();
 
-        const passwordHash = this.hashPassword(data.password, salt);
+        const passwordHash = await this.hashPassword(data.password, salt);
 
         return this.createAndSave({
             ...data,
@@ -45,8 +61,8 @@ export default class Admin extends BaseEntity {
         return crypto.randomBytes(this.SALT_LENGTH).toString('hex');
     }
 
-    private static hashPassword(password: string, salt: string) {
-        const hash = crypto.scryptSync(password, salt, Admin.KEY_LENGTH);
+    private static async hashPassword(password: string, salt: string) {
+        const hash = await scryptAsync(password, salt, Admin.KEY_LENGTH) as Buffer;
 
         return hash.toString('hex');
     }
@@ -56,7 +72,7 @@ export default class Admin extends BaseEntity {
             where : { email: data.email }
         });
 
-        if (!admin || !admin.checkPassword(data.password)) {
+        if (!admin || !await admin.checkPassword(data.password)) {
             throw new BadRequestException({
                 code : 'EMAIL_OR_PASSWORD_WRONG'
             });
@@ -65,8 +81,8 @@ export default class Admin extends BaseEntity {
         return admin;
     }
 
-    private checkPassword(password: string) {
-        const hash = Admin.hashPassword(password, this.salt);
+    async checkPassword(password: string) {
+        const hash = await Admin.hashPassword(password, this.salt);
 
         return hash === this.passwordHash;
     }

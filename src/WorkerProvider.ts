@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import AppProvider     from './AppProvider';
 import WorkerModule    from './worker.module';
 
-
 export default class WorkerProvider extends AppProvider {
     getNestApplication() {
         return this.nestApplication;

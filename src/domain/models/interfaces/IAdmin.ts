@@ -1,6 +1,9 @@
 export interface IAdminRegisterParams {
-    email    : string;
-    password : string;
+    roleId    : number;
+    email     : string;
+    firstName : string;
+    lastName  : string;
+    password  : string;
 }
 
 export interface IAdminAuthenticateParams {

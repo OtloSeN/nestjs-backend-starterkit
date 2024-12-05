@@ -1,5 +1,6 @@
 import crypto                                                                                    from 'crypto';
 import { extname }                                                                               from 'path';
+import { promisify }                                                                             from 'util';
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { KEY_LENGTH, SALT_LENGTH }                                                               from '@common/constants';
 import { BadRequestException }                                                                   from '@common/exceptions';
@@ -7,6 +8,8 @@ import BaseEntity                                                               
 import { IUserRegisterData, IUserUpdateProfileData }                                             from './interfaces/IUser';
 import File                                                                                      from './File';
 import SystemAction                                                                              from './SystemAction';
+
+const scryptAsync = promisify(crypto.scrypt);
 
 export enum UserStatuses {
     ACTIVE = 'ACTIVE',
@@ -64,7 +67,7 @@ export default class User extends BaseEntity {
 
     static async register(data: IUserRegisterData) {
         const salt = this.generateSalt();
-        const passwordHash = this.hashPassword(data.password, salt);
+        const passwordHash = await this.hashPassword(data.password, salt);
 
         const avatarPath = this.getAvatarPath(data.avatar.originalname);
 
@@ -88,21 +91,21 @@ export default class User extends BaseEntity {
         return crypto.randomBytes(this.SALT_LENGTH).toString('hex');
     }
 
-    private static hashPassword(password: string, salt: string) {
-        const hash = crypto.scryptSync(password, salt, this.KEY_LENGTH);
+    private static async hashPassword(password: string, salt: string) {
+        const hash = await scryptAsync(password, salt, this.KEY_LENGTH) as Buffer;
 
         return hash.toString('hex');
     }
 
-    checkPassword(password: string) {
-        const hash = User.hashPassword(password, this.salt);
+    async checkPassword(password: string) {
+        const hash = await User.hashPassword(password, this.salt);
 
         return hash === this.passwordHash;
     }
 
     async resetPassword(newPassword: string) {
         const salt = User.generateSalt();
-        const passwordHash = User.hashPassword(newPassword, salt);
+        const passwordHash = await User.hashPassword(newPassword, salt);
 
         await this.update({
             salt,
@@ -140,12 +143,12 @@ export default class User extends BaseEntity {
         }
 
         if (data.password && data.oldPassword) {
-            if (!this.checkPassword(data.oldPassword)) {
+            if (!await this.checkPassword(data.oldPassword)) {
                 throw new BadRequestException({ code: 'WRONG_OLD_PASSWORD' });
             }
 
             dataToUpdate.salt = User.generateSalt();
-            dataToUpdate.passwordHash = User.hashPassword(data.password, dataToUpdate.salt);
+            dataToUpdate.passwordHash = await User.hashPassword(data.password, dataToUpdate.salt);
         }
 
         await this.update(dataToUpdate as this);

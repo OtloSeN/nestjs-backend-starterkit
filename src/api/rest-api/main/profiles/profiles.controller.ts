@@ -5,8 +5,9 @@ import { AnyFilesInterceptor }                                                  
 import mergeBodyWithFiles                                                                        from '@common/utils/mergeBodyWithFiles';
 import AllowedUserStatuses                                                                       from '@common/decorators/allowedStatuses.decorator';
 import { UserStatuses }                                                                          from '@domainModels/User';
+import { UserSessionDto }                                                                        from '@common/dto';
 import MainSessionGuard                                                                          from '../sessions/sessions.guard';
-import MainSessionContext, { IMainSessionContext }                                               from '../sessions/sessionContext.decorator';
+import MainSessionContext                                                                        from '../sessions/sessionContext.decorator';
 import MainProfileCreate, { MainProfileCreateParams, MainProfileCreateReturn }                   from './useCases/Create.useCase';
 import MainProfileShow, { MainProfileShowReturn }                                                from './useCases/Show.useCase';
 import MainProfileUpdate, { MainProfileUpdateParams, MainProfileUpdateReturn }                   from './useCases/Update.useCase';
@@ -43,7 +44,7 @@ export default class MainProfileController {
     @Get('/')
     @ApiBearerAuth()
     @ApiOkResponse({ type: MainProfileShowReturn })
-    showProfile(@MainSessionContext() sessionContext: IMainSessionContext) {
+    showProfile(@MainSessionContext() sessionContext: UserSessionDto) {
         return this.mainProfileShow.run({
             sessionContext
         });
@@ -57,7 +58,7 @@ export default class MainProfileController {
     updateProfile(
     @Body() body: MainProfileUpdateParams,
         @UploadedFiles() files: Express.Multer.File[],
-        @MainSessionContext() sessionContext: IMainSessionContext
+        @MainSessionContext() sessionContext: UserSessionDto
     ) {
         return this.mainProfileUpdate.run({
             data : mergeBodyWithFiles(body, files),
@@ -68,7 +69,7 @@ export default class MainProfileController {
     @Delete('/')
     @ApiBearerAuth()
     @ApiOkResponse()
-    deleteProfile(@MainSessionContext() sessionContext: IMainSessionContext) {
+    deleteProfile(@MainSessionContext() sessionContext: UserSessionDto) {
         return this.mainProfileDelete.run({
             sessionContext
         });

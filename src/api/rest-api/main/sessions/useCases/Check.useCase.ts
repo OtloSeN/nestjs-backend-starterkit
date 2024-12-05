@@ -30,10 +30,10 @@ export default class MainSessionCheck extends BaseUseCase<
     });
 
     protected async execute(data: IMainSessionCheckParams) {
-        let payload;
+        let payload: UserSessionDto;
 
         try {
-            payload = jwt.verify(data.token, this.appConfig.session.secret);
+            payload = jwt.verify(data.token, this.appConfig.session.secret) as UserSessionDto;
         } catch (error) {
             if (error instanceof JsonWebTokenError) {
                 throw new ForbiddenException();
@@ -44,7 +44,7 @@ export default class MainSessionCheck extends BaseUseCase<
         }
 
         const user = await User.findOneOrThrow({
-            where : { id: payload.id }
+            where : { id: payload.userId }
         });
 
         return dumpUserSession(user);

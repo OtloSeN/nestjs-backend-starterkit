@@ -5,11 +5,8 @@ definitions:
     - step: &PreparationStep
         name: Pipeline preparations
         script:
-          - mkdir -p certs
-          - echo "Apple cert for tests" > ./certs/AppleAuthKey.p8
           - npm i
         artifacts:
-          - certs/*
           - node_modules/**
     - parallel: &TestSteps
         steps:

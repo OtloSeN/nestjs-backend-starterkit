@@ -4,6 +4,7 @@ import appConfig      from 'configs/appConfig';
 import User           from '@domainModels/User';
 import Admin          from '@domainModels/Admin';
 import SystemAction   from '@domainModels/SystemAction';
+import Role           from '@domainModels/Role';
 
 const dataSource = new DataSource({
     type                      : appConfig.db.dialect,
@@ -21,7 +22,8 @@ const dataSource = new DataSource({
     entities       : [
         User,
         Admin,
-        SystemAction
+        SystemAction,
+        Role
     ],
     logger : 'advanced-console'
 });

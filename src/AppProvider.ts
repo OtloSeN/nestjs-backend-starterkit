@@ -62,6 +62,10 @@ export default class AppProvider {
         });
 
         this.nestApplication.useGlobalInterceptors(new TempFilesInterceptor(this.logger));
+
+        this.nestApplication.enableCors({
+            origin : '*' // We allow any origin because we don't use cookies for authorization
+        });
     }
 
     protected setupSwaggerApiDocs() {

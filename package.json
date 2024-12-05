@@ -11,16 +11,23 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:docker-services": "docker-compose -f docker/docker-compose.services.yml up",
+
     "lint": "eslint \"{src,lib,tests}/**/*.ts\" --fix",
     "test": "npm run migration:up:test && jest --runInBand --config ./tests/jest.config.json",
     "test:coverage": "npm run test -- --coverage",
-    "typeorm-cli": "npx ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm",
+
     "migration:create": "npm run typeorm-cli -- migration:create",
     "migration:up": "npm run typeorm-cli -- migration:run -d ./src/domain/dataSource",
     "migration:down": "npm run typeorm-cli -- migration:revert -d ./src/domain/dataSource",
     "migration:up:test": "cross-env NODE_ENV=test npm run migration:up",
     "migration:down:test": "cross-env NODE_ENV=test npm run migration:down",
-    "worker:create-admin": "node -r ts-node/register -r tsconfig-paths/register worker CreateAdmin",
+
+    "worker:seed-roles": "npm run worker-cli -- worker SeedRoles",
+    "worker:create-admin": "npm run worker-cli -- worker CreateAdmin",
+    "seed": "npm run worker:seed-roles",
+    
+    "typeorm-cli": "npx ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm",
+    "worker-cli": "node -r ts-node/register -r tsconfig-paths/register",
     "prepare": "husky"
   },
   "dependencies": {

@@ -2,6 +2,7 @@ import { Module }              from '@nestjs/common';
 import ApplicationConfig       from 'configs/appConfig.module';
 import LoggerModule            from 'lib/logger/logger.module';
 import AsyncLocalStorageModule from 'lib/asyncLocalStorage/asl.module';
+import WorkerSeedRoles         from './workers/seedRoles';
 import WorkerCreateAdmin       from './workers/createAdmin';
 
 @Module({
@@ -11,6 +12,7 @@ import WorkerCreateAdmin       from './workers/createAdmin';
         AsyncLocalStorageModule
     ],
     providers : [
+        WorkerSeedRoles,
         WorkerCreateAdmin
     ]
 })

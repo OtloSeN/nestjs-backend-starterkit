@@ -1,15 +1,15 @@
 import jwt                     from 'jsonwebtoken';
 import { Inject, Injectable }  from '@nestjs/common';
 import BaseUseCase             from '@common/BaseUseCase';
-import User                    from 'src/domain/models/User';
 import Joi                     from 'joi';
 import { ApiProperty }         from '@nestjs/swagger';
 import { BadRequestException } from '@common/exceptions';
 import IAppConfig              from 'configs/interfaces/IAppConfig';
 import { CONFIG_PROVIDER_KEY } from 'configs/appConfig';
-import { dumpUserSession }     from '@common/dumps';
+import Admin                   from '@domainModels/Admin';
+import { dumpAdminSession }    from '@common/dumps';
 
-export class MainSessionCreateParams {
+export class AdminSessionCreateParams {
     @ApiProperty()
     email : string;
 
@@ -17,16 +17,16 @@ export class MainSessionCreateParams {
     password : string;
 }
 
-export class MainSessionCreateReturn {
+export class AdminSessionCreateReturn {
     @ApiProperty()
     accessToken : string;
 }
 
 @Injectable()
-export default class MainSessionCreate extends BaseUseCase<
-    MainSessionCreateParams,
+export default class AdminSessionCreate extends BaseUseCase<
+    AdminSessionCreateParams,
     undefined,
-    MainSessionCreateReturn
+    AdminSessionCreateReturn
 > {
     constructor(
         @Inject(CONFIG_PROVIDER_KEY)
@@ -35,24 +35,24 @@ export default class MainSessionCreate extends BaseUseCase<
         super();
     }
 
-    protected validationSchema = Joi.object<MainSessionCreateParams>({
+    protected validationSchema = Joi.object<AdminSessionCreateParams>({
         email    : Joi.string().email().required(),
         password : Joi.string().required()
     });
 
-    protected async execute(data: MainSessionCreateParams) {
-        const user = await User.findOne({
+    protected async execute(data: AdminSessionCreateParams) {
+        const admin = await Admin.findOne({
             where : {
                 email : data.email
             }
         });
 
-        if (!user || !await user.checkPassword(data.password)) {
+        if (!admin || !await admin.checkPassword(data.password)) {
             throw new BadRequestException({ code: 'EMAIL_OR_PASSWORD_WRONG' });
         }
 
         const accessToken = jwt.sign(
-            { ...dumpUserSession(user) },
+            { ...dumpAdminSession(admin) },
             this.appConfig.session.secret,
             {
                 expiresIn : this.appConfig.session.maxAge

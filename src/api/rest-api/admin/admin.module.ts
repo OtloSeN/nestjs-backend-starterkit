@@ -1,11 +1,11 @@
 import { Module }         from '@nestjs/common';
 import CustomRouterModule from '@common/CustomRouterModule';
 import AdminSessionModule from './sessions/sessions.module';
-import AdminUserModule    from './users/users.module';
+import AdminRoleModule    from './roles/roles.module';
 
 const modules = [
     AdminSessionModule,
-    AdminUserModule
+    AdminRoleModule
 ];
 
 @Module({

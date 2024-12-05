@@ -5,8 +5,10 @@ import { BadRequestException } from '@common/exceptions/BadRequestException';
 import WorkerProvider          from 'src/WorkerProvider';
 import appConfig               from 'configs/appConfig';
 import CreateAdmin             from 'src/workers/createAdmin';
+import SeedRoles               from 'src/workers/seedRoles';
 
 const WORKERS = {
+    SeedRoles,
     CreateAdmin
 };
 

@@ -1,9 +1,19 @@
-import { Controller, UseGuards } from '@nestjs/common';
-import { ApiTags }               from '@nestjs/swagger';
-import AdminSessionGuard         from './sessions.guard';
+import { Body, Controller, Post }                                                 from '@nestjs/common';
+import { ApiCreatedResponse, ApiTags }                                            from '@nestjs/swagger';
+import AdminSessionCreate, { AdminSessionCreateParams, AdminSessionCreateReturn } from './useCases/Create.useCase';
 
 @ApiTags('Sessions')
 @Controller('/sessions')
-@UseGuards(AdminSessionGuard)
 export default class AdminSessionController {
+    constructor(
+        private readonly adminSessionCreate: AdminSessionCreate
+    ) {}
+
+    @Post('/')
+    @ApiCreatedResponse({ type: AdminSessionCreateReturn })
+    createSession(@Body() body: AdminSessionCreateParams) {
+        return this.adminSessionCreate.run({
+            data : body
+        });
+    }
 }
