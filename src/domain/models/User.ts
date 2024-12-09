@@ -1,13 +1,13 @@
-import crypto                                                                                    from 'crypto';
-import { extname }                                                                               from 'path';
-import { promisify }                                                                             from 'util';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
-import { KEY_LENGTH, SALT_LENGTH }                                                               from '@common/constants';
-import { BadRequestException }                                                                   from '@common/exceptions';
-import BaseEntity                                                                                from './BaseEntity';
-import { IUserRegisterData, IUserUpdateProfileData }                                             from './interfaces/IUser';
-import File                                                                                      from './File';
-import SystemAction                                                                              from './SystemAction';
+import crypto                                                                                           from 'crypto';
+import { extname }                                                                                      from 'path';
+import { promisify }                                                                                    from 'util';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany }        from 'typeorm';
+import { KEY_LENGTH, SALT_LENGTH }                                                                      from '@common/constants';
+import { BadRequestException, ForbiddenRequestException }                                               from '@common/exceptions';
+import BaseEntity                                                                                       from './BaseEntity';
+import { IUserAuthenticateParams, IUserRegisterData, IUserUpdateByAdminParams, IUserUpdateProfileData } from './interfaces/IUser';
+import File                                                                                             from './File';
+import SystemAction                                                                                     from './SystemAction';
 
 const scryptAsync = promisify(crypto.scrypt);
 
@@ -23,7 +23,7 @@ export default class User extends BaseEntity {
     @PrimaryGeneratedColumn({ type: 'int' })
     id : number;
 
-    @Column({ type: 'enum', enum: UserStatuses, nullable: false, default: UserStatuses.BLOCKED })
+    @Column({ type: 'enum', enum: UserStatuses, nullable: false, default: UserStatuses.ACTIVE })
     status : UserStatuses;
 
     @Column({ type: 'varchar', nullable: false, unique: true })
@@ -61,6 +61,14 @@ export default class User extends BaseEntity {
 
     static readonly AVATAR_DIR = 'users/avatars';
 
+    public get isActive() : boolean {
+        return this.status === UserStatuses.ACTIVE;
+    }
+
+    public get isBlocked() : boolean {
+        return this.status === UserStatuses.BLOCKED;
+    }
+
     static getAvatarPath(originalname: string) {
         return `${this.AVATAR_DIR}/${crypto.randomUUID()}${extname(originalname)}`;
     }
@@ -83,6 +91,24 @@ export default class User extends BaseEntity {
             filepath : data.avatar.path,
             mimetype : data.avatar.mimetype
         });
+
+        return user;
+    }
+
+    static async authenticate(data: IUserAuthenticateParams) {
+        const user = await this.findOne({
+            where : {
+                email : data.email
+            }
+        });
+
+        if (!user.isActive) {
+            throw new ForbiddenRequestException({ code: 'WRONG_USER_STATUS' });
+        }
+
+        if (!user || !await user.checkPassword(data.password)) {
+            throw new BadRequestException({ code: 'EMAIL_OR_PASSWORD_WRONG' });
+        }
 
         return user;
     }
@@ -160,5 +186,9 @@ export default class User extends BaseEntity {
         await this.remove();
 
         await File.deleteFile({ path: this.avatarPath });
+    }
+
+    async updateByAdmin(data: IUserUpdateByAdminParams) {
+        return this.update(data as this);
     }
 }

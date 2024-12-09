@@ -1,10 +1,11 @@
-import { Injectable }               from '@nestjs/common';
-import Joi                          from 'joi';
-import BaseUseCase                  from '@common/BaseUseCase';
-import User                         from 'src/domain/models/User';
-import { ApiProperty }              from '@nestjs/swagger';
-import EmailSender, { EMAIL_TYPES } from 'lib/email/EmailSender';
-import SystemAction                 from '@domainModels/SystemAction';
+import { Injectable }                from '@nestjs/common';
+import Joi                           from 'joi';
+import BaseUseCase                   from '@common/BaseUseCase';
+import User                          from 'src/domain/models/User';
+import { ApiProperty }               from '@nestjs/swagger';
+import EmailSender, { EMAIL_TYPES }  from 'lib/email/EmailSender';
+import SystemAction                  from '@domainModels/SystemAction';
+import { ForbiddenRequestException } from '@common/exceptions';
 
 export class MainSystemActionPasswordResetParams {
     @ApiProperty()
@@ -33,6 +34,10 @@ export default class MainSystemActionPasswordReset extends BaseUseCase<
                 email : data.email
             }
         });
+
+        if (user.isBlocked) {
+            throw new ForbiddenRequestException({ code: 'WRONG_USER_STATUS' });
+        }
 
         const action = await SystemAction.createPasswordResetAction(user.id);
 

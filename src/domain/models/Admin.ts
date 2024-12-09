@@ -1,11 +1,11 @@
-import crypto                                                                                               from 'crypto';
-import { promisify }                                                                                        from 'util';
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne }            from 'typeorm';
-import { KEY_LENGTH, SALT_LENGTH }                                                                          from '@common/constants';
-import { BadRequestException }                                                                              from '@common/exceptions';
-import { IAdminRegisterParams, IAdminAuthenticateParams, IAdminUpdateMeParams, IAdminUpdateInstanceParams } from './interfaces/IAdmin';
-import BaseEntity                                                                                           from './BaseEntity';
-import Role                                                                                                 from './Role';
+import crypto                                                                                    from 'crypto';
+import { promisify }                                                                             from 'util';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { KEY_LENGTH, SALT_LENGTH }                                                               from '@common/constants';
+import { BadRequestException }                                                                   from '@common/exceptions';
+import { IAdminRegisterParams, IAdminUpdateMeParams, IAdminUpdateInstanceParams }                from './interfaces/IAdmin';
+import BaseEntity                                                                                from './BaseEntity';
+import Role                                                                                      from './Role';
 
 const scryptAsync = promisify(crypto.scrypt);
 
@@ -71,20 +71,6 @@ export default class Admin extends BaseEntity {
         const hash = await scryptAsync(password, salt, Admin.KEY_LENGTH) as Buffer;
 
         return hash.toString('hex');
-    }
-
-    static async authenticate(data: IAdminAuthenticateParams) {
-        const admin = await this.findOne({
-            where : { email: data.email }
-        });
-
-        if (!admin || !await admin.checkPassword(data.password)) {
-            throw new BadRequestException({
-                code : 'EMAIL_OR_PASSWORD_WRONG'
-            });
-        }
-
-        return admin;
     }
 
     async checkPassword(password: string) {

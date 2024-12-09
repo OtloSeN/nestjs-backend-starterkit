@@ -4,7 +4,6 @@ import BaseUseCase             from '@common/BaseUseCase';
 import User                    from 'src/domain/models/User';
 import Joi                     from 'joi';
 import { ApiProperty }         from '@nestjs/swagger';
-import { BadRequestException } from '@common/exceptions';
 import IAppConfig              from 'configs/interfaces/IAppConfig';
 import { CONFIG_PROVIDER_KEY } from 'configs/appConfig';
 import { dumpUserSession }     from '@common/dumps';
@@ -41,15 +40,7 @@ export default class MainSessionCreate extends BaseUseCase<
     });
 
     protected async execute(data: MainSessionCreateParams) {
-        const user = await User.findOne({
-            where : {
-                email : data.email
-            }
-        });
-
-        if (!user || !await user.checkPassword(data.password)) {
-            throw new BadRequestException({ code: 'EMAIL_OR_PASSWORD_WRONG' });
-        }
+        const user = await User.authenticate(data);
 
         const accessToken = jwt.sign(
             { ...dumpUserSession(user) },

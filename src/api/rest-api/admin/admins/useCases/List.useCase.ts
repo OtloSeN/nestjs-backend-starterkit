@@ -13,8 +13,8 @@ export class AdminAdminListParams {
     @ApiPropertyOptional({ default: 0 })
     offset : number;
 
-    @ApiPropertyOptional({ default: 'createdAt', enum: [ 'id', 'name', 'createdAt', 'updatedAt' ] })
-    orderBy : 'id' | 'name' | 'createdAt' | 'updatedAt';
+    @ApiPropertyOptional({ default: 'createdAt', enum: [ 'id', 'email', 'createdAt', 'updatedAt' ] })
+    orderBy : 'id' | 'email' | 'createdAt' | 'updatedAt';
 
     @ApiPropertyOptional({ default: 'DESC' })
     order : 'ASC' | 'DESC';
@@ -40,7 +40,7 @@ export default class AdminAdminList extends BaseUseCase<
     protected validationSchema = Joi.object<AdminAdminListParams>({
         limit   : Joi.number().integer().positive().default(this.DEFAULT_LIMIT),
         offset  : Joi.number().integer().min(0).default(this.DEFAULT_OFFSET),
-        orderBy : Joi.string().valid('id', 'name', 'createdAt', 'updatedAt').default('createdAt'),
+        orderBy : Joi.string().valid('id', 'email', 'createdAt', 'updatedAt').default('createdAt'),
         order   : Joi.string().valid('ASC', 'DESC').default('DESC'),
         search  : Joi.string().trim().min(1)
     });

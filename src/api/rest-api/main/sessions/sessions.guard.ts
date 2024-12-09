@@ -4,12 +4,13 @@ import {
     Injectable,
     UnauthorizedException
 } from '@nestjs/common';
-import { Request }         from 'express';
-import { Reflector }       from '@nestjs/core';
-import AllowedUserStatuses from '@common/decorators/allowedStatuses.decorator';
-import IsPublic            from '@common/decorators/isPublic.decorator';
-import { UserStatuses }    from '@domainModels/User';
-import SessionCheckUseCase from './useCases/Check.useCase';
+import { Request }                   from 'express';
+import { Reflector }                 from '@nestjs/core';
+import AllowedUserStatuses           from '@common/decorators/allowedStatuses.decorator';
+import IsPublic                      from '@common/decorators/isPublic.decorator';
+import { UserStatuses }              from '@domainModels/User';
+import { ForbiddenRequestException } from '@common/exceptions';
+import SessionCheckUseCase           from './useCases/Check.useCase';
 
 @Injectable()
 export default class MainSessionGuard implements CanActivate {
@@ -31,7 +32,7 @@ export default class MainSessionGuard implements CanActivate {
 
         const sessionContext = await this.sessionCheckUseCase.run({ data: { token } });
 
-        if (!this.isUserStatusAllowed(context, sessionContext.status)) return false;
+        this.checkUserStatus(context, sessionContext.status);
 
         request.sessionContext = sessionContext;
 
@@ -55,13 +56,15 @@ export default class MainSessionGuard implements CanActivate {
         return !!isPublic;
     }
 
-    private isUserStatusAllowed(context: ExecutionContext, userStatus: UserStatuses) {
+    private checkUserStatus(context: ExecutionContext, userStatus: UserStatuses) {
         let allowedStatuses = this.reflector.get(AllowedUserStatuses, context.getHandler());
 
         if (!allowedStatuses) {
             allowedStatuses = this.reflector.get(AllowedUserStatuses, context.getClass());
         }
 
-        return !allowedStatuses || allowedStatuses.includes(userStatus);
+        if (allowedStatuses && !allowedStatuses.includes(userStatus)) {
+            throw new ForbiddenRequestException({ code: 'WRONG_USER_STATUS' });
+        }
     }
 }

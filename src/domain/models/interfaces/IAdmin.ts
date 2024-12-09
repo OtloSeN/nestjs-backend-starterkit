@@ -6,11 +6,6 @@ export interface IAdminRegisterParams {
     password  : string;
 }
 
-export interface IAdminAuthenticateParams {
-    email    : string;
-    password : string;
-}
-
 export interface IAdminUpdateMeParams {
     firstName?   : string;
     lastName?    : string;
