@@ -1,12 +1,13 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
-import Joi                                        from 'joi';
-import BaseUseCase                                from '@common/BaseUseCase';
-import { CONFIG_PROVIDER_KEY }                    from 'configs/appConfig';
-import jwt, { JsonWebTokenError }                 from 'jsonwebtoken';
-import User                                       from 'src/domain/models/User';
-import IAppConfig                                 from 'configs/interfaces/IAppConfig';
-import { UserSessionDto }                         from '@common/dto';
-import { dumpUserSession }                        from '@common/dumps';
+import { Inject, Injectable }        from '@nestjs/common';
+import Joi                           from 'joi';
+import BaseUseCase                   from '@common/BaseUseCase';
+import { CONFIG_PROVIDER_KEY }       from 'configs/appConfig';
+import jwt, { JsonWebTokenError }    from 'jsonwebtoken';
+import User                          from 'src/domain/models/User';
+import IAppConfig                    from 'configs/interfaces/IAppConfig';
+import { UserSessionDto }            from '@common/dto';
+import { dumpUserSession }           from '@common/dumps';
+import { ForbiddenRequestException } from '@common/exceptions';
 
 export interface IMainSessionCheckParams {
     token : string
@@ -36,7 +37,7 @@ export default class MainSessionCheck extends BaseUseCase<
             payload = jwt.verify(data.token, this.appConfig.session.secret) as UserSessionDto;
         } catch (error) {
             if (error instanceof JsonWebTokenError) {
-                throw new ForbiddenException();
+                throw new ForbiddenRequestException({ code: 'PERMISSION_DENIED' });
             }
 
             /* istanbul ignore next */

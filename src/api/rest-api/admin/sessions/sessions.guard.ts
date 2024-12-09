@@ -1,16 +1,16 @@
 import {
     CanActivate,
     ExecutionContext,
-    ForbiddenException,
     Injectable,
     UnauthorizedException
 } from '@nestjs/common';
-import { Request }              from 'express';
-import { Reflector }            from '@nestjs/core';
-import IsPublic                 from '@common/decorators/isPublic.decorator';
-import RequiredAdminPermissions from '@common/decorators/requiredPermission.decorator';
-import { RolePermissions }      from '@domainModels/Role';
-import AdminSessionCheck        from './useCases/Check.useCase';
+import { Request }                   from 'express';
+import { Reflector }                 from '@nestjs/core';
+import IsPublic                      from '@common/decorators/isPublic.decorator';
+import RequiredAdminPermissions      from '@common/decorators/requiredPermission.decorator';
+import { RolePermissions }           from '@domainModels/Role';
+import { ForbiddenRequestException } from '@common/exceptions';
+import AdminSessionCheck             from './useCases/Check.useCase';
 
 @Injectable()
 export default class AdminSessionGuard implements CanActivate {
@@ -65,7 +65,7 @@ export default class AdminSessionGuard implements CanActivate {
 
 
         if (requiredPermissions && !requiredPermissions.every(permission => adminPermissions.includes(permission))) {
-            throw new ForbiddenException();
+            throw new ForbiddenRequestException({ code: 'PERMISSION_DENIED' });
         }
     }
 }

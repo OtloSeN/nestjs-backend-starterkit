@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiCreatedResponse, ApiTags }                                         from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiOkResponse, ApiTags }                          from '@nestjs/swagger';
 import RequiredAdminPermissions                                                from '@common/decorators/requiredPermission.decorator';
 import { RolePermissions }                                                     from '@domainModels/Role';
 import AdminSessionGuard                                                       from '../sessions/sessions.guard';
@@ -33,7 +33,7 @@ export default class AdminRoleController {
     }
 
     @Get('/')
-    @ApiCreatedResponse({ type: AdminRoleListReturn })
+    @ApiOkResponse({ type: AdminRoleListReturn })
     listRoles(@Query() query: AdminRoleListParams) {
         return this.adminRoleList.run({
             data : query
@@ -41,13 +41,13 @@ export default class AdminRoleController {
     }
 
     @Get('/permissions')
-    @ApiCreatedResponse({ type: AdminRolePermissionListReturn })
+    @ApiOkResponse({ type: AdminRolePermissionListReturn })
     listRolePermissions() {
         return this.adminRolePermissionList.run();
     }
 
     @Get('/:id')
-    @ApiCreatedResponse({ type: AdminRoleShowReturn })
+    @ApiOkResponse({ type: AdminRoleShowReturn })
     showRole(@Param('id') id: number) {
         return this.adminRoleShow.run({
             data : {
@@ -57,7 +57,7 @@ export default class AdminRoleController {
     }
 
     @Patch('/:id')
-    @ApiCreatedResponse({ type: AdminRoleUpdateReturn })
+    @ApiOkResponse({ type: AdminRoleUpdateReturn })
     updateRole(@Param('id') id: number, @Body() body: AdminRoleUpdateBody) {
         return this.adminRoleUpdate.run({
             data : {
@@ -68,7 +68,7 @@ export default class AdminRoleController {
     }
 
     @Delete('/:id')
-    @ApiCreatedResponse({ type: AdminRoleDeleteReturn })
+    @ApiOkResponse({ type: AdminRoleDeleteReturn })
     deleteRole(@Param('id') id: number) {
         return this.adminRoleDelete.run({
             data : {

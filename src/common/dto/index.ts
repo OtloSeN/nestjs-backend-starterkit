@@ -3,3 +3,4 @@ export * from './users';
 export * from './sessions';
 export * from './systemActions';
 export * from './roles';
+export * from './admins';
