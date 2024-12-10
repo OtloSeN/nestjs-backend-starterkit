@@ -1,3 +1,0 @@
-describe('Main: show profile', () => {
-
-});

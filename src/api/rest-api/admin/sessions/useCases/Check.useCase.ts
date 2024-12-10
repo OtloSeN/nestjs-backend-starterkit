@@ -37,7 +37,7 @@ export default class AdminSessionCheck extends BaseUseCase<
             payload = jwt.verify(data.token, this.appConfig.session.secret) as AdminSessionDto;
         } catch (error) {
             if (error instanceof JsonWebTokenError) {
-                throw new ForbiddenRequestException({ code: 'PERMISSION_DENIED' });
+                throw new ForbiddenRequestException({ code: 'WRONG_TOKEN' });
             }
 
             /* istanbul ignore next */

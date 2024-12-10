@@ -33,6 +33,7 @@ export default abstract class BaseEntity extends TypeormBaseEntity {
                 });
             }
 
+            /* istanbul ignore next */
             throw err;
         }
     }
@@ -50,14 +51,14 @@ export default abstract class BaseEntity extends TypeormBaseEntity {
         try {
             return await super.save(saveOptions);
         } catch (error) {
-            /* istanbul ignore if */
             if (error instanceof QueryFailedError && error.driverError.code === 'ER_DUP_ENTRY') {
                 throw new NotUniqueException({
                     code : `${this.constructor.name.toUpperCase()}_NOT_UNIQUE`
                 });
-            } else {
-                throw error;
             }
+
+            /* istanbul ignore next */
+            throw error;
         }
     }
 

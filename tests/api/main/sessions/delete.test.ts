@@ -1,3 +1,0 @@
-describe('Main: session deleting', () => {
-
-});

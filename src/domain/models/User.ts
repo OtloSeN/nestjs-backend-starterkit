@@ -102,12 +102,12 @@ export default class User extends BaseEntity {
             }
         });
 
-        if (!user.isActive) {
-            throw new ForbiddenRequestException({ code: 'WRONG_USER_STATUS' });
-        }
-
         if (!user || !await user.checkPassword(data.password)) {
             throw new BadRequestException({ code: 'EMAIL_OR_PASSWORD_WRONG' });
+        }
+
+        if (!user.isActive) {
+            throw new ForbiddenRequestException({ code: 'WRONG_USER_STATUS' });
         }
 
         return user;

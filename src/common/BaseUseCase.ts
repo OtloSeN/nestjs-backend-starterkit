@@ -49,7 +49,9 @@ export default abstract class BaseUseCase<UseCaseParams, SessionContext, UseCase
         try {
             const validatedData = await this.validate(params.data);
 
-            return this.execute(validatedData);
+            const result = await this.execute(validatedData);
+
+            return result;
         } catch (error) {
             this.handleException(error);
         }

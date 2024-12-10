@@ -5,7 +5,6 @@ import {
     addTransactionalDataSource,
     initializeTransactionalContext
 } from 'typeorm-transactional';
-import cookieParser         from 'cookie-parser';
 import TempFilesInterceptor from '@common/interceptors/tempFiles.interceptor';
 import AppProvider          from '../src/AppProvider';
 import AppModule            from '../src/app.module';
@@ -37,7 +36,6 @@ export default class TestProvider extends AppProvider {
             rawBody : true
         });
 
-        this.nestApplication.use(cookieParser(this.config.session.secret));
         this.nestApplication.useGlobalInterceptors(new TempFilesInterceptor(this.logger));
 
         await this.nestApplication.init();

@@ -9,11 +9,8 @@
     "transform": {
         "^.+\\.(t|j)s$": "ts-jest"
     },
-    "globalSetup": "<rootDir>/tests/globalSetup.ts",
-    "globalTeardown": "<rootDir>/tests/globalTeardown.ts",
-    "setupFilesAfterEnv": [
-        "<rootDir>/tests/setupAfterEnv.ts"
-    ],
+    "globalSetup": "./tests/globalSetup.ts",
+    "globalTeardown": "./tests/globalTeardown.ts",
     "moduleNameMapper": {
         "^src/(.*)$": "<rootDir>/src/$1",
         "^lib/(.*)$": "<rootDir>/lib/$1",
